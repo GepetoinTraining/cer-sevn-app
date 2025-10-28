@@ -3,11 +3,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { prisma } from '../lib/prisma';
 import { getUserSession } from '../lib/session';
 import { SaveItemSchema } from '../lib/schemas';
 import { createUniqueSlug } from '../lib/utils';
-import { ItemStatus } from '@prisma/client';
+import { prisma, ItemStatus } from '../lib/prisma';
 
 export type SaveItemState = {
   success: boolean;
