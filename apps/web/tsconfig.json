@@ -24,8 +24,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./app/*"],
-      // Keep this relative path as well, ensuring consistency
+      "@/*": ["./app/*"], // Alias for files inside ./app
+      "@web/*": ["./*"], // <-- Add alias for files directly under apps/web
       "@prisma/client": ["../../node_modules/.prisma/client"]
     }
   },
