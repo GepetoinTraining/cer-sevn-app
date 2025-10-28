@@ -2,7 +2,7 @@ import '@mantine/core/styles.css'; // Ensure core styles are imported
 import React from 'react';
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
 import { Notifications } from '@mantine/notifications'; // If you installed notifications
-import { theme } from './theme'; // Import your theme
+import { theme } from '../theme'; // Import your theme
 
 export const metadata = {
   title: 'CER SEVN App',
