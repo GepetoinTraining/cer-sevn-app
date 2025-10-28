@@ -1,0 +1,21 @@
+/* Import Mantine core styles */
+@import '@mantine/core/styles.css';
+@import '@mantine/notifications/styles.css'; /* If you installed notifications */
+
+/* Your global styles */
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Add any other base styles you need */

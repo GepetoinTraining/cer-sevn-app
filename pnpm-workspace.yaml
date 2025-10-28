@@ -1,0 +1,3 @@
+packages:
+  - 'apps/*' # Location of your frontend and backend apps
+  # - 'packages/*' # Optional: For shared code/types later
