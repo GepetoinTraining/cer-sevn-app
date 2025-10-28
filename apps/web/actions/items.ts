@@ -3,10 +3,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { prisma, ItemStatus } from '../lib/prisma';
 import { getUserSession } from '../lib/session';
 import { SaveItemSchema } from '../lib/schemas';
 import { createUniqueSlug } from '../lib/utils';
-import { prisma, ItemStatus } from '../lib/prisma';
+
 
 export type SaveItemState = {
   success: boolean;
@@ -44,13 +45,14 @@ export async function saveItem(
     const itemData = {
       title,
       type,
-      status,
+      status, // This uses the imported ItemStatus enum
       orgId: session.organizationId,
       sectorId: session.sectorId,
       // createdById: session.userId, // Uncomment when relations are added
     };
 
     // 4. Handle Publishing (Slug generation)
+    // Ensure status comparison uses the imported enum
     if (status === ItemStatus.PUBLISHED) {
       const existingItem = itemId
         ? await prisma.item.findUnique({
@@ -61,7 +63,8 @@ export async function saveItem(
 
       // Only generate a new slug if it's not already published
       if (!existingItem?.slug) {
-        slug = await createUniqueSlug(title, session.organizationId);
+        // --- ADD EXPLICIT CAST HERE ---
+        slug = await createUniqueSlug(title as string, session.organizationId);
       } else {
         slug = existingItem.slug;
       }
@@ -169,3 +172,4 @@ export async function saveItem(
     return { success: false, error: 'Erro no servidor. Tente novamente.' };
   }
 }
+
