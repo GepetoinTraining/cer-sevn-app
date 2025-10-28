@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { jwtVerify } from 'jose';
 import { MantineProvider, Container, AppShell, Burger, Group, Title } from '@mantine/core';
-import { theme } from '../../theme'; // Assuming theme is in root app folder
+import { theme } from '@web/theme'; // Correct alias path
 import React from 'react';
 
 // Define the secret key (MUST match the one used in FastAPI and middleware)
