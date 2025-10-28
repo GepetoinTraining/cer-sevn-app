@@ -1,5 +1,102 @@
-node_modules
-# Keep environment variables out of version control
-.env
+See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-/generated/prisma
+Node Dependencies
+
+Ignore node_modules anywhere in the project
+
+node_modules/
+
+Yarn/pnpm specific
+
+.pnp*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+Next.js build outputs
+
+Ignore .next anywhere in the project
+
+.next/
+
+Ignore out directory anywhere
+
+out/
+
+Python Virtual Environment
+
+Ignore .venv anywhere in the project
+
+.venv/
+
+Python cache files
+
+pycache/
+*.py[cod]
+*$py.class
+
+Prisma
+
+prisma/dev.db
+prisma/dev.db-journal
+
+Build & Production artifacts
+
+build/
+dist/
+*.local
+
+Logs
+
+logs
+.log
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+OS generated files
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+Environment variables
+
+.env
+.env*.local
+!.env.example
+
+Editor directories and files
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+.idea
+*.suo
+.ntvs
+*.njsproj
+*.sln
+*.sw?
+
+Misc
+
+*.pem
+*.tsbuildinfo
+.vercel
+
+Contentlayer
+
+.contentlayer
+
+Add any other project-specific ignores below

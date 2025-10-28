@@ -1,15 +1,283 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// Define the JavaScript/TypeScript client generator (for Next.js)
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client" // Default output location
+}
+
+// Define the Python client generator (for FastAPI)
+generator clientPy {
+  provider = "prisma-client-py"
+  // output = "../apps/api/.venv/lib/pythonX.Y/site-packages/prisma" // Example output, adjust if needed
+  // You might adjust the output path depending on your virtual env structure
+  // or leave it default if prisma-client-py handles it well within the .venv
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql" // As selected during init
+  url      = env("DATABASE_URL") // Uses the .env variable for CLI commands
 }
+
+// --- Models ---
+
+model Role {
+  id    String @id @default(cuid())
+  key   String @unique // e.g., 'jr', 'sr', 'lider', 'diretor'
+  name  String // e.g., 'Jr.', 'Sr.', 'Líder', 'Franqueado/Diretor'
+  users User[]
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  slug      String    @unique // "knn" | "phenom"
+  name      String
+  theme     Json? // Store branding colors, fonts etc.
+  // Relations
+  sectors   Sector[]
+  templates Template[]
+  items     Item[]
+  linkTree  LinkTree?
+  events    Event[]
+  users     User[]
+}
+
+model Sector {
+  id           String       @id @default(cuid())
+  key          String // "comercial", "pedagogico", "administrativo", "marketing"
+  name         String // "Comercial", "Pedagógico", "Administrativo", "Marketing"
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId        String
+  templates    Template[]
+  items        Item[]
+  users        User[]
+
+  @@unique([orgId, key]) // Sector key must be unique within an organization
+}
+
+model User {
+  id             String       @id @default(cuid())
+  name           String
+  hashedPin      String // Store the hashed PIN, never plain text
+  pinIdentifier  String?      @unique // Optional: if PIN needs to be unique (e.g., schoolSlug-PIN)
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  sector         Sector       @relation(fields: [sectorId], references: [id], onDelete: Restrict) // Don't cascade delete user if sector deleted
+  sectorId       String
+  role           Role         @relation(fields: [roleId], references: [id], onDelete: Restrict) // Don't cascade delete user if role deleted
+  roleId         String
+  // Timestamps
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([sectorId])
+  @@index([roleId])
+}
+
+model Template {
+  id           String    @id @default(cuid())
+  title        String
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId        String
+  sector       Sector?   @relation(fields: [sectorId], references: [id], onDelete: SetNull) // Template remains if sector deleted
+  sectorId     String?
+  // Content (Example: Store the structure for creating Items)
+  tabsJson     Json      @map("tabs") // Changed from String to Json
+  // Timestamps
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Possible fields for who created it
+  // createdBy    User?     @relation("CreatedTemplates", fields: [createdById], references: [id])
+  // createdById  String?
+
+  @@index([orgId])
+  @@index([orgId, sectorId])
+}
+
+// Enum definitions
+enum ItemType {
+  NOTICE
+  EVENT
+  FORM // For collecting structured data
+  CHOICE // For simple polls/multiple choice
+  GALLERY_ITEM // Placeholder type if a gallery itself needs an Item entry
+  DOCUMENT // Placeholder for LaTeX documents
+}
+
+enum ItemStatus {
+  DRAFT
+  PENDING_APPROVAL // For Jr role submissions
+  PUBLISHED
+  ARCHIVED
+}
+
+model Item {
+  id           String     @id @default(cuid())
+  slug         String?    @unique // Generated on publish
+  title        String
+  type         ItemType
+  status       ItemStatus @default(DRAFT)
+  settings     Json? // E.g., form settings, event details initially
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId        String
+  sector       Sector?    @relation(fields: [sectorId], references: [id], onDelete: SetNull) // Item remains if sector deleted
+  sectorId     String?
+  tabs         Tab[]
+  responses    Response[]
+  event        Event? // One-to-one for event-specific details
+  // Analytics
+  views        Int        @default(0)
+  // Timestamps
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Possible fields for tracking creation/publishing
+  // createdBy    User?      @relation("CreatedItems", fields: [createdById], references: [id])
+  // createdById  String?
+  // publishedAt  DateTime?
+  // publishedBy  User?      @relation("PublishedItems", fields: [publishedById], references: [id])
+  // publishedById String?
+
+  @@index([orgId])
+  @@index([orgId, sectorId])
+  @@index([status])
+}
+
+model Tab {
+  id       String @id @default(cuid())
+  title    String
+  order    Int // For ordering tabs within an item
+  sections Json // Array of section objects { "kind": "text", "content": "..." } etc.
+  // Relations
+  item     Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId   String
+
+  @@index([itemId, order])
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  payload   Json // Store form answers, choice selections, etc.
+  // Relations
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  // Optional: Link to a specific user if needed in the future
+  // userId    String?
+  // user      User?    @relation(fields: [userId], references: [id])
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([itemId, createdAt])
+}
+
+model Event {
+  id           String    @id @default(cuid())
+  startAt      DateTime
+  endAt        DateTime?
+  venue        String?
+  // Relations
+  item         Item      @relation(fields: [itemId], references: [id], onDelete: Cascade) // Links back to the main Item
+  itemId       String    @unique // Ensures one Event per Item
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId        String
+  galleries    Gallery[]
+
+  @@index([orgId, startAt])
+}
+
+// --- Gallery Related Models ---
+
+model Gallery {
+  id      String   @id @default(cuid())
+  dateKey String // "YYYY-MM-DD" format, unique per event
+  // Relations
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String
+  photos  Photo[]
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, dateKey]) // Only one gallery per event per day
+}
+
+model Photo {
+  id        String     @id @default(cuid())
+  src       String // URL/path from Vercel Blob
+  caption   String?
+  // Relations
+  gallery   Gallery    @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  galleryId String
+  comments  Comment[]
+  reactions Reaction[]
+  // Meta
+  addedAt   DateTime   @default(now())
+  addedById String? // Optional: Link to User who added it
+  // addedBy   User?      @relation("AddedPhotos", fields: [addedById], references: [id])
+
+  @@index([galleryId, addedAt])
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  text      String
+  status    CommentStatus @default(PENDING)
+  // Relations
+  photo     Photo         @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photoId   String
+  // Optional: Link to a user if you implement public user accounts later
+  // authorName String? // Or link to User model
+  // Timestamps
+  createdAt DateTime      @default(now())
+  // Optional: Who moderated it
+  // moderatedById String?
+  // moderatedBy   User?     @relation("ModeratedComments", fields: [moderatedById], references: [id])
+  // moderatedAt   DateTime?
+
+  @@index([photoId])
+  @@index([status])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  emoji     String // 
+  // Relations
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photoId   String
+  // Optional: Link to a user if needed later to prevent multiple reactions
+  // userId    String?
+  // user      User?    @relation(fields: [userId], references: [id])
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Ensure one reaction type per user per photo, if userId is added
+  // @@unique([photoId, userId, emoji])
+  @@index([photoId])
+}
+
+// --- Link Tree Model ---
+
+model LinkTree {
+  id           String       @id @default(cuid())
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId        String       @unique
+  // Content
+  socials      Json // Array: [{label, url, iconKey}]
+  blocks       Json? // Array: [{type: 'link', label, url}, {type: 'header', text}, ...]
+  // Timestamps
+  updatedAt    DateTime     @updatedAt
+}
+

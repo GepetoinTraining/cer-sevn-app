@@ -1,0 +1,7 @@
+fastapi>=0.100.0 # Use a recent version
+uvicorn[standard]>=0.20.0 # Add [standard] for better performance
+python-dotenv>=1.0.0 # For reading .env files locally
+python-jose[cryptography]>=3.4.0 # For JWT handling
+python-multipart>=0.0.6 # For handling form data
+passlib[bcrypt]>=1.7.4 # For password hashing
+prisma
