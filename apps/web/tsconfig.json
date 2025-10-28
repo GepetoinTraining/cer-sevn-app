@@ -1,19 +1,23 @@
 {
-  "extends": "@next/tsconfig/tsconfig.json",
+  // No "extends" field needed anymore
   "compilerOptions": {
+    // Core Next.js settings (merged)
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
+    "noEmit": true, // Important for Next.js builds
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler", // Recommended for modern tooling
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
+    "jsx": "preserve", // Next.js handles JSX transformation
+    "incremental": true, // Speeds up subsequent builds
+    "forceConsistentCasingInFileNames": true, // Good practice
+
+    // Your project-specific settings
     "plugins": [
       {
         "name": "next"
@@ -21,6 +25,7 @@
     ],
     "paths": {
       "@/*": ["./app/*"],
+      // Keep this relative path as well, ensuring consistency
       "@prisma/client": ["../../node_modules/.prisma/client"]
     }
   },
@@ -29,7 +34,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "postcss.config.cjs"
-, "next.config.mjs"  ],
+    "./postcss.config.cjs" // Corrected relative path
+  ],
   "exclude": ["node_modules"]
 }
+
