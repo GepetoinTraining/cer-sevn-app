@@ -1,7 +1,7 @@
-// apps/web/dashboard/[schoolSlug]/create/page.tsx
+'use client'; // <-- Add this directive
 
 import { Container, Title, Paper } from '@mantine/core';
-import { ContentEditor } from '@/components/editor/ContentEditor';
+import { ContentEditor } from '@/components/editor/ContentEditor'; // Ensure this path is correct based on tsconfig
 
 // This page is protected by middleware.ts, so we are guaranteed
 // to have an authenticated user.
