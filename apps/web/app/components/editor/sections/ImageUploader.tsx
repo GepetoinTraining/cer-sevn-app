@@ -16,7 +16,7 @@ import {
 } from '@mantine/core';
 import { IconUpload, IconCheck, IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import { uploadImage, UploadState } from '@/actions/upload';
+import { uploadImage, UploadState } from '../../../../actions/upload';
 
 interface ImageUploaderProps {
   currentSrc: string | null;
